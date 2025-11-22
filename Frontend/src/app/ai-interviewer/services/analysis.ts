@@ -169,8 +169,17 @@ OUTPUT JSON matching this schema:
     }
 
     const data = await response.json()
+
+    // Guard against empty or missing analysis payloads to prevent JSON.parse errors
+    if (!data || typeof data.analysis !== 'string' || data.analysis.trim() === '') {
+      console.warn('⚠️ Empty analysis payload received – returning fallback result')
+      return {
+        score: 50,
+        feedback: 'Analysis temporarily unavailable. Please try again.'
+      }
+    }
+
     let analysisResult: IndividualAnalysis
-    
     try {
       // Clean the response - remove markdown code blocks if present
       let cleanedAnalysis = data.analysis.trim()
@@ -182,7 +191,7 @@ OUTPUT JSON matching this schema:
         cleanedAnalysis = cleanedAnalysis.replace(/^```\s*/i, '').replace(/```\s*$/, '')
       }
       
-      // Parse the JSON response from AI
+      // Attempt to parse the JSON response from AI
       analysisResult = JSON.parse(cleanedAnalysis)
       console.log('✅ Structured analysis parsed successfully:', analysisResult)
       console.log('📊 Score calculated:', analysisResult.scores.overall)
@@ -199,17 +208,9 @@ OUTPUT JSON matching this schema:
     // Extract score and prepare structured feedback for UI
     const score = Math.min(95, Math.max(0, analysisResult.scores.overall))
     
-    // Create clean actionable feedback (no markdown)
-    const structuredFeedback = `
-${analysisResult.feedback.one_liner}
-
-What to improve:
-${analysisResult.feedback.quick_wins.map((win, idx) => `${idx + 1}. ${win}`).join('\n')}
-
-${analysisResult.flags.answered_the_question ? '' : 'Note: Your answer did not fully address the question asked.\n'}
-${analysisResult.flags.possible_fabrication ? 'Caution: Some claims seemed unverifiable - provide specific evidence.\n' : ''}
-${analysisResult.flags.generic_buzzwords ? 'Tip: Replace buzzwords with concrete examples from your experience.\n' : ''}
-    `.trim()
+    // Build concise actionable feedback (max 3 bullets)
+    const conciseWins = (analysisResult.feedback.quick_wins || []).slice(0, 3)
+    const structuredFeedback = conciseWins.map((w, i) => `${i + 1}. ${w}`).join('\n')
 
     console.log('📊 Individual analysis complete - Score:', score)
     return { score, feedback: structuredFeedback }

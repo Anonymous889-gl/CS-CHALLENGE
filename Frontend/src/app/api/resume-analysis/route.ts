@@ -38,21 +38,6 @@ interface ResumeAnalysis {
       resources: string[]
     }>
   }
-  industryMatching?: {
-    topIndustries: Array<{
-      industry: string
-      matchScore: number
-      reasoning: string
-    }>
-    careerLevel: string
-    experienceYears: number
-  }
-  salaryEstimation?: {
-    estimatedRange: { min: number; max: number; currency: string }
-    factors: string[]
-    marketData: string
-    location: string
-  }
   careerSuggestions?: {
     nextRoles: string[]
     careerPath: Array<{ role: string; timeframe: string; requirements: string[] }>
@@ -869,8 +854,6 @@ function normalizeAnalysis(a: Partial<ResumeAnalysis>): ResumeAnalysis {
     sections: a.sections ?? [],
     suggestions: a.suggestions ?? [],
     skillGapAnalysis: a.skillGapAnalysis,
-    industryMatching: a.industryMatching,
-    salaryEstimation: a.salaryEstimation,
     careerSuggestions: a.careerSuggestions
   } as ResumeAnalysis
 }
@@ -887,8 +870,6 @@ async function analyzeWithGemini(parsedResume: any): Promise<ResumeAnalysis> {
     atsCompatibility: basic.atsCompatibility,
     suggestions: basic.suggestions,
     skillGapAnalysis: advanced.skillGapAnalysis,
-    industryMatching: advanced.industryMatching,
-    salaryEstimation: advanced.salaryEstimation,
     careerSuggestions: advanced.careerSuggestions
   })
 }
@@ -903,7 +884,7 @@ async function callGeminiAPIOnce(prompt: string, kind: 'basic' | 'advanced', par
   const ac = new AbortController()
   const timer = setTimeout(() => ac.abort(), 20000)
   try {
-                const modelName = process.env.GEMINI_MODEL ?? (kind === 'basic' ? 'gemini-1.5-flash' : 'gemini-1.5-pro');
+                const modelName = process.env.GEMINI_MODEL ?? 'gemini-2.5-flash';
             const resp = await fetch(
       `https://generativelanguage.googleapis.com/v1/models/${modelName}:generateContent?key=${process.env.GEMINI_API_KEY}`,
       {
@@ -1010,20 +991,22 @@ async function callGeminiAPI(prompt: string, kind: 'basic' | 'advanced', parsedR
 
 async function performBasicAnalysis(parsedResume: any): Promise<Partial<ResumeAnalysis>> {
   const ctx = analyzeResumeContext(parsedResume)
-  const resumeText = parsedResume.fullText.substring(0, 2500)
+  // Remove contact information for privacy
+  const sanitizedFullText = parsedResume.fullText.replace(parsedResume.sections.contact || '', '')
+  const resumeText = sanitizedFullText.substring(0, 2500)
   
   const prompt = `Analyze this resume and return JSON with this EXACT structure:
 
 {
-  "overallScore": 75,
-  "atsScore": 70,
-  "clarityScore": 65,
+  "overallScore": 78,
+  "atsScore": 81,
+  "clarityScore": 72,
   "seniorityLevel": "mid",
   "redFlags": ["too generic summary"],
   "sections": [
-    {"title": "Skills", "content": "", "score": 80, "feedback": []},
-    {"title": "Experience", "content": "", "score": 65, "feedback": []},
-    {"title": "Education", "content": "", "score": 70, "feedback": []}
+    {"title": "Skills", "content": "", "score": 83, "feedback": []},
+    {"title": "Experience", "content": "", "score": 77, "feedback": []},
+    {"title": "Education", "content": "", "score": 79, "feedback": []}
   ],
   "suggestions": [
     {"before": "Managed team projects", "after": "Led cross-functional team of 5 engineers, delivering 3 projects on time, increasing efficiency by 25%"},
@@ -1066,17 +1049,6 @@ Return ONLY valid JSON:
     "skillLevel": "Mid",
     "recommendedSkills": ["..."],
     "learningPaths": [{"skill":"...", "priority":"High", "timeToLearn":"3-6 months", "resources":["..."]}]
-  },
-  "industryMatching": {
-    "topIndustries": [{"industry":"Technology","matchScore":85,"reasoning":"..."}],
-    "careerLevel":"Mid-level",
-    "experienceYears":5
-  },
-  "salaryEstimation": {
-    "estimatedRange":{"min":60000,"max":90000,"currency":"USD"},
-    "factors":["experience","skills","location"],
-    "marketData":"Based on current market trends",
-    "location":"USA"
   },
   "careerSuggestions": {
     "nextRoles": ["Senior Developer","Tech Lead"],
@@ -1192,17 +1164,6 @@ function generateFallbackAnalysis(kind: 'basic' | 'advanced', parsedResume?: any
       skillLevel: 'Mid',
       recommendedSkills: ['Project management', 'Team leadership', 'Strategic planning'],
       learningPaths: [{ skill: 'Project Management', priority: 'High', timeToLearn: '3-6 months', resources: ['PMP Certification', 'Online courses'] }]
-    },
-    industryMatching: {
-      topIndustries: [{ industry: 'Technology', matchScore: 80, reasoning: 'Skills align with industry requirements' }],
-      careerLevel: 'Mid-level',
-      experienceYears: 5
-    },
-    salaryEstimation: {
-      estimatedRange: { min: 60000, max: 90000, currency: 'USD' },
-      factors: ['Experience level', 'Technical skills', 'Market demand'],
-      marketData: 'Based on industry standards',
-      location: 'USA'
     },
     careerSuggestions: {
       nextRoles: ['Senior Developer', 'Team Lead', 'Project Manager'],

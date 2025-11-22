@@ -39,7 +39,10 @@ export default function LoginPage() {
       const data = await response.json()
 
       if (response.ok) {
-        // Store token if provided
+        // Remove any leftover data from previous sessions to avoid cross-account leakage
+        ;['connectedProfiles','recentProfileAnalysis','savedJobs','savedJobsData','applicationsCount'].forEach(k => localStorage.removeItem(k))
+
+        // Store new auth token
         if (data.token) {
           localStorage.setItem('authToken', data.token)
         }

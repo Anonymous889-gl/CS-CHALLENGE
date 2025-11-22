@@ -3,7 +3,10 @@
 import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { useEffect, useState } from "react"
+import Image from "next/image"
 import AvatarDropdown from "./avatar-dropdown"
+import logo from '@/assets/logo.png';   
+
 
 export default function Header() {
   const pathname = usePathname()
@@ -12,6 +15,12 @@ export default function Header() {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [userInitial, setUserInitial] = useState("U")
+  const [credits, setCredits] = useState<number | null>(null)
+  useEffect(() => {
+    const handler = (e: any) => setCredits(e.detail)
+    window.addEventListener('credits-update', handler)
+    return () => window.removeEventListener('credits-update', handler)
+  }, [])
 
   useEffect(() => {
     setIsReady(true)
@@ -32,6 +41,9 @@ export default function Header() {
       .then(data => {
         if (data.user?.name) {
           setUserInitial(data.user.name.charAt(0).toUpperCase())
+        }
+        if (typeof data.user?.creditsBalance !== 'undefined') {
+          setCredits(data.user.creditsBalance)
         }
       })
       .catch(error => console.error('Error fetching user data:', error))
@@ -57,17 +69,16 @@ export default function Header() {
       <div className="w-full px-4">
         <div className="flex items-center h-14 w-full">
           {/* Logo - Left side - Fixed width to match right side */}
-          <div className="flex-shrink-0 w-[200px]">
+          <div className="flex-shrink-0 pr-4">
             <Link href={isLoggedIn ? "/dashboard" : "/"} className="flex items-center gap-3 hover:opacity-80 transition-opacity">
-              <div className="h-6 w-6 text-indigo-600">
-                <svg fill="none" viewBox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
-                  <path
-                    d="M4 42.4379C4 42.4379 14.0962 36.0744 24 41.1692C35.0664 46.8624 44 42.2078 44 42.2078L44 7.01134C44 7.01134 35.068 11.6577 24.0031 5.96913C14.0971 0.876274 4 7.27094 4 7.27094L4 42.4379Z"
-                    fill="currentColor"
-                  ></path>
-                </svg>
-              </div>
-              <h2 className="text-lg font-extrabold text-gray-900 font-[Manrope]">UtopiaHire</h2>
+              <Image
+                src={logo}
+                alt="UtopiaHire Logo"
+                height={160}
+                width={700}
+                className="h-40 w-auto"
+                priority
+              />
             </Link>
           </div>
 
@@ -86,7 +97,7 @@ export default function Header() {
           {/* Spacer to push content to edges */}
           <div className="flex-1 flex justify-center">
             {/* Navigation - centered */}
-            <nav className="hidden md:flex items-center gap-6">
+            <nav className="hidden md:flex items-center gap-8 justify-center">
               {isReady && !isAuthPage && !isCompleteProfile && (
                 isLoggedIn ? (
                 <>
@@ -163,7 +174,12 @@ export default function Header() {
           </div>
 
           {/* Right side actions - Fixed width to keep navigation centered */}
-          <div className="flex items-center gap-3 flex-shrink-0 w-[200px] justify-end">
+          <div className="flex items-center gap-4 flex-shrink-0 justify-end">
+            {credits !== null && (
+              <div className="hidden md:inline-block px-3 py-0.5 rounded-full border border-indigo-600 bg-indigo-50 text-indigo-600 text-xs font-semibold">
+                {credits === -1 ? '∞' : `${credits} Credits`}
+              </div>
+            )}
             {!isAuthPage && !isCompleteProfile && !isProfilePage && !isDashboard && !isResumeReviewer && !isJobMatcher && !isAIInterviewer && !isSavedJobs && !isSettings && (
               <>
                 <Link

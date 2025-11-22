@@ -7,13 +7,15 @@ import PageTransition from "../../components/page-transition";
 type Audience = "jobseeker" | "company";
 
 type Plan = {
-  name: string;
-  price: string;
-  period: string;
-  credits: string;
-  features: string[];
-  cta: string;
-};
+  name: string
+  price: string
+  period: string
+  credits?: string
+  features: string[]
+  cta: string
+  popular?: boolean
+  icon?: string // material symbol name
+}
 
 export default function PricingPage() {
   const [audience, setAudience] = useState<Audience>("jobseeker");
@@ -30,6 +32,7 @@ export default function PricingPage() {
         "Up to 70 job matches / week",
       ],
       cta: "Get Started",
+      icon: "bolt",  // generic icon
     },
     {
       name: "Premium",
@@ -43,6 +46,8 @@ export default function PricingPage() {
         "Priority support",
       ],
       cta: "Upgrade",
+      popular: true,
+      icon: "workspace_premium"
     },
     {
       name: "Pro",
@@ -56,6 +61,7 @@ export default function PricingPage() {
         "Early access to new features",
       ],
       cta: "Go Pro",
+      icon: "military_tech"
     },
   ];
 
@@ -71,6 +77,8 @@ export default function PricingPage() {
         "Priority visibility across the platform",
       ],
       cta: "Subscribe",
+      popular: true,
+      icon: "business_center"
     },
   ];
 
@@ -122,22 +130,35 @@ export default function PricingPage() {
             {plans.map((plan) => (
               <div
                 key={plan.name}
-                className="max-w-sm w-full flex flex-col min-h-[460px] border-2 border-gray-300 rounded-xl p-8 shadow-md hover:shadow-lg transition-shadow"
+                className={`relative flex flex-col w-full border rounded-[32px] p-10 transition-all duration-300 hover:-translate-y-1 ${
+                  plan.popular
+                    ? 'border-gray-900 shadow-2xl'
+                    : 'border-gray-200 hover:border-gray-300 shadow-md hover:shadow-xl'
+                }`}
               >
-                <h3 className="text-xl font-bold mb-4">{plan.name}</h3>
+                {/* Popular badge */}
+                {plan.popular && (
+                  <span className="absolute -top-4 left-1/2 -translate-x-1/2 bg-gray-900 text-white text-xs font-semibold px-3 py-1 rounded-full">Most Popular</span>
+                )}
+                <div className="flex items-center justify-center gap-2 mb-6">
+                  {plan.icon && (
+                  <span className={`material-symbols-outlined text-3xl ${plan.popular ? 'text-gray-900' : 'text-gray-600'}`}>{plan.icon}</span>
+                )}
+                  <h3 className="text-xl font-bold">{plan.name}</h3>
+                </div>
                 <div className="mb-6">
-                  <span className="text-4xl font-extrabold">${plan.price}</span>
+                  <span className="text-5xl font-extrabold">${plan.price}</span>
                   <span className="text-gray-600 ml-1">{plan.period}</span>
                 </div>
-                <p className="text-sm text-indigo-600 font-semibold mb-6">
-                  {plan.credits}
-                </p>
+                {plan.credits && (
+                  <p className="text-sm text-indigo-600 font-semibold mb-6">
+                    {plan.credits}
+                  </p>
+                )}
                 <ul className="space-y-2 text-left flex-1">
                   {plan.features.map((feat) => (
                     <li key={feat} className="flex items-start gap-2">
-                      <span className="material-symbols-outlined text-indigo-600 text-base">
-                        check_circle
-                      </span>
+                      <span className="material-symbols-outlined text-indigo-600 text-base">check_circle</span>
                       <span>{feat}</span>
                     </li>
                   ))}

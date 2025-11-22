@@ -22,6 +22,32 @@ interface ResumeAnalysis {
     after: string
     explanation: string
   }>
+  skillGapAnalysis?: {
+    missingSkills: string[]
+    skillLevel: 'Junior' | 'Mid' | 'Senior' | 'Expert'
+    recommendedSkills: string[]
+    learningPaths: Array<{
+      skill: string
+      priority: 'High' | 'Medium' | 'Low'
+      timeToLearn: string
+      resources: string[]
+    }>
+  }
+  careerSuggestions?: {
+    nextRoles: string[]
+    careerPath: Array<{ role: string; timeframe: string; requirements: string[] }>
+    promotionReadiness: number
+  }
+  industryMatching?: {
+    careerLevel: string
+    experienceYears: number
+    topIndustries: Array<{ industry: string; matchScore: number }>
+  }
+  salaryEstimation?: {
+    estimatedRange: { min: number; max: number; currency: string }
+    location?: string
+    factors?: string[]
+  }
 }
 
 export default function ResumeReviewer() {
@@ -66,6 +92,34 @@ export default function ResumeReviewer() {
     setIsAnalyzing(true)
     setAnalysisProgress(0)
 
+    // Deduct credits (20)
+    try {
+      const token = localStorage.getItem('authToken')
+      const chargeRes = await fetch('http://localhost:5000/api/billing/charge', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          ...(token ? { 'Authorization': `Bearer ${token}` } : {})
+        },
+        body: JSON.stringify({ amount: 20 })
+      })
+      if (chargeRes.status === 402) {
+        const data = await chargeRes.json()
+        warning('Not enough credits', `You have ${data.creditsBalance} credits left. Please upgrade your plan.`)
+        setIsAnalyzing(false)
+        return
+      }
+      const { creditsBalance } = await chargeRes.json()
+      window.dispatchEvent(new CustomEvent('credits-update', { detail: creditsBalance }))
+      if (!chargeRes.ok) {
+        throw new Error('Failed to deduct credits')
+      }
+    } catch (e) {
+      error('Billing error', (e as Error).message)
+      setIsAnalyzing(false)
+      return
+    }
+
     try {
       // Progress simulation
       const progressInterval = setInterval(() => {
@@ -74,7 +128,8 @@ export default function ResumeReviewer() {
             clearInterval(progressInterval)
             return prev
           }
-          return prev + Math.random() * 15
+          const next = prev + Math.random() * 15
+          return Math.min(next, 95)
         })
       }, 500)
 
@@ -115,6 +170,24 @@ export default function ResumeReviewer() {
       
       if (result.success) {
         setAnalysis(result.analysis)
+
+        // 🔄 Save score to backend metrics
+        try {
+          const token = localStorage.getItem('authToken')
+          if (token) {
+            await fetch('http://localhost:5000/api/profile/update-metrics', {
+              method: 'PUT',
+              headers: {
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${token}`
+              },
+              body: JSON.stringify({ resumeScore: result.analysis.overallScore })
+            })
+          }
+        } catch (e) {
+          console.warn('Unable to update resume score in DB:', e)
+        }
+
         success("Analysis Complete", "Your resume has been analyzed successfully!")
         console.log('Analysis result:', result.analysis)
         console.log('Strengths count:', result.analysis.strengths?.length || 0)
@@ -226,12 +299,12 @@ export default function ResumeReviewer() {
                 <div className="space-y-2">
                   <div className="flex justify-between text-sm font-[Manrope]">
                     <span className="text-gray-600">Analyzing resume...</span>
-                    <span className="text-indigo-600">{Math.round(analysisProgress)}%</span>
+                    <span className="text-indigo-600">{Math.round(Math.min(analysisProgress, 100))}%</span>
                   </div>
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div 
                       className="bg-indigo-600 h-2 rounded-full transition-all duration-500 ease-out"
-                      style={{ width: `${analysisProgress}%` }}
+                      style={{ width: `${Math.min(analysisProgress, 100)}%` }}
                     ></div>
                   </div>
                 </div>
@@ -404,6 +477,68 @@ export default function ResumeReviewer() {
                             </div>
                           </div>
                         ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Advanced Insights */}
+                  {analysis.skillGapAnalysis && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-1 h-6 bg-blue-500 rounded-full"></div>
+                        <h3 className="text-xl font-bold text-gray-900 font-[Manrope]">
+                          Skill Gap Analysis
+                        </h3>
+                      </div>
+                      <div className="space-y-2 text-sm text-gray-700 font-[Manrope]">
+                        <p><strong>Skill Level:</strong> {analysis.skillGapAnalysis.skillLevel}</p>
+                        {analysis.skillGapAnalysis.missingSkills?.length > 0 && (
+                          <p><strong>Missing:</strong> {analysis.skillGapAnalysis.missingSkills.join(', ')}</p>
+                        )}
+                        {analysis.skillGapAnalysis.recommendedSkills?.length > 0 && (
+                          <p><strong>Recommended:</strong> {analysis.skillGapAnalysis.recommendedSkills.join(', ')}</p>
+                        )}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Best-Fit Industries */}
+                  {analysis.industryMatching && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-1 h-6 bg-purple-500 rounded-full"></div>
+                        <h3 className="text-xl font-bold text-gray-900 font-[Manrope]">
+                          Best-Fit Industries
+                        </h3>
+                      </div>
+                      <div className="space-y-2 text-sm text-gray-700 font-[Manrope]">
+                        <p><strong>Career Level:</strong> {analysis.industryMatching.careerLevel}</p>
+                        <p><strong>Experience:</strong> {analysis.industryMatching.experienceYears} yrs</p>
+                        <ul className="list-disc list-inside">
+                          {analysis.industryMatching.topIndustries.map((ind, idx) => (
+                            <li key={idx}>{ind.industry} – {ind.matchScore}%</li>
+                          ))}
+                        </ul>
+                      </div>
+                    </div>
+                  )}
+
+
+                  {analysis.careerSuggestions && (
+                    <div className="space-y-4">
+                      <div className="flex items-center gap-3 mb-4">
+                        <div className="w-1 h-6 bg-orange-500 rounded-full"></div>
+                        <h3 className="text-xl font-bold text-gray-900 font-[Manrope]">
+                          Career Suggestions
+                        </h3>
+                      </div>
+                      <div className="space-y-2 text-sm text-gray-700 font-[Manrope]">
+                        {analysis.careerSuggestions.nextRoles?.length > 0 && (
+                          <p><strong>Next Roles:</strong> {analysis.careerSuggestions.nextRoles.join(', ')}</p>
+                        )}
+                        {analysis.careerSuggestions.promotionReadiness !== undefined && (
+                          <p><strong>Promotion Readiness:</strong> {analysis.careerSuggestions.promotionReadiness}%</p>
+                        )}
                       </div>
                     </div>
                   )}

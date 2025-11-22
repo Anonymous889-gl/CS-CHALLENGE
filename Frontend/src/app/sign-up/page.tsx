@@ -194,6 +194,9 @@ export default function SignUpPage() {
       const data = await response.json()
 
       if (response.ok) {
+        // Clear any data belonging to an earlier account in this browser
+        ;['connectedProfiles','recentProfileAnalysis','savedJobs','savedJobsData','applicationsCount'].forEach(k => localStorage.removeItem(k))
+
         // Store token if provided
         if (data.token) {
           localStorage.setItem('authToken', data.token)

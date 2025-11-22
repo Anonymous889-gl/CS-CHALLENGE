@@ -75,8 +75,8 @@ export default function AvatarDropdown({ isOpen, onClose }: AvatarDropdownProps)
   }, [isOpen, onClose])
 
   const handleLogout = () => {
-    // Remove auth token
-    localStorage.removeItem('authToken')
+    // Remove auth token and any user-specific cached data
+    ;['authToken','connectedProfiles','recentProfileAnalysis','savedJobs','savedJobsData','applicationsCount'].forEach(k => localStorage.removeItem(k))
     onClose()
     router.push("/")
   }

@@ -119,7 +119,7 @@ export default function CompleteProfile() {
         setShowSuccessPopup(true)
         // Redirect to dashboard after showing success popup
         setTimeout(() => {
-          router.push('/dashboard')
+          router.push('/choose-plan')
         }, 2000)
       } else {
         const data = await response.json()

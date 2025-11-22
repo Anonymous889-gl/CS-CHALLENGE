@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect, useRef, useCallback, useState } from 'react'
 import { Question } from '../../../data/interview-questions'
 import { ttsService } from '../../../services/tts-service'
@@ -527,52 +528,6 @@ export default function InterviewPhase({
                       <p className="text-sm text-gray-600 font-[Manrope]">Speak your answer naturally</p>
                     </div>
                   </div>
-                  
-                  {/* Status Indicators */}
-                  <div className="flex items-center gap-2">
-                    {isCalibrating && (
-                      <div className="flex items-center gap-2 bg-purple-50 text-purple-700 px-3 py-1 rounded-full">
-                        <div className="w-2 h-2 bg-purple-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-medium font-[Manrope]">Calibrating mic... please stay quiet</span>
-                      </div>
-                    )}
-                    {isAISpeaking && (
-                      <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-medium font-[Manrope]">AI Speaking</span>
-                      </div>
-                    )}
-                    {showSpeakNow && !isPaused && (
-                      <div className="flex items-center gap-2 bg-green-50 text-green-700 px-3 py-1 rounded-full">
-                        <span className="material-symbols-outlined text-sm animate-pulse">mic</span>
-                        <span className="text-sm font-medium font-[Manrope]">Your Turn - Start Speaking</span>
-                      </div>
-                    )}
-                    {isListening && (
-                      <div className="flex items-center gap-2 bg-blue-50 text-blue-700 px-3 py-1 rounded-full">
-                        <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-medium font-[Manrope]">Listening...</span>
-                      </div>
-                    )}
-                    {isRecording && !isPaused && !isAISpeaking && (
-                      <div className="flex items-center gap-2 bg-red-50 text-red-700 px-3 py-1 rounded-full">
-                        <div className="w-2 h-2 bg-red-500 rounded-full animate-pulse"></div>
-                        <span className="text-sm font-medium font-[Manrope]">Recording</span>
-                      </div>
-                    )}
-                    {isPaused && (
-                      <div className="flex items-center gap-2 bg-gray-50 text-gray-700 px-3 py-1 rounded-full">
-                        <span className="material-symbols-outlined text-sm">pause</span>
-                        <span className="text-sm font-medium font-[Manrope]">Paused</span>
-                      </div>
-                    )}
-                    {isTranscribing && (
-                      <div className="flex items-center gap-2 bg-yellow-50 text-yellow-700 px-3 py-1 rounded-full">
-                        <div className="w-3 h-3 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
-                        <span className="text-sm font-medium font-[Manrope]">Transcribing...</span>
-                      </div>
-                    )}
-                  </div>
                 </div>
                 
                 <div className="relative bg-gray-900 rounded-lg overflow-hidden mb-4">
@@ -603,14 +558,6 @@ export default function InterviewPhase({
                     className="absolute inset-0 w-full h-full pointer-events-none"
                     style={{ display: 'none' }}
                   />
-                  
-                  {/* Speaking Indicator */}
-                  {isListening && (
-                    <div className="absolute top-4 left-4 flex items-center gap-2 bg-green-500 text-white px-3 py-1 rounded-full">
-                      <span className="material-symbols-outlined text-sm">mic</span>
-                      <span className="text-sm font-[Manrope]">Speaking</span>
-                    </div>
-                  )}
                 </div>
                 
                 {/* Current Question Display */}

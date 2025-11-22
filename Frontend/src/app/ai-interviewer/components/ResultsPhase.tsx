@@ -1,3 +1,4 @@
+"use client";
 import React from 'react'
 import { Question } from '../../../data/interview-questions'
 import { analyzeCompleteInterview, ComprehensiveAnalysisResult } from '../services/analysis'
@@ -138,7 +139,7 @@ export default function ResultsPhase({
 
           {/* Question Breakdown */}
           <div className="bg-white p-6 rounded-xl shadow-sm border border-gray-200 mb-8">
-            <div className="flex items-center gap-3 mb-6">
+            <div className="flex items-center gap-2 mb-4">
               <span className="material-symbols-outlined text-gray-600 text-xl">quiz</span>
               <h3 className="text-xl font-bold text-gray-900 font-[Manrope]">Question Breakdown</h3>
             </div>
@@ -219,26 +220,20 @@ export default function ResultsPhase({
           <div className="bg-white p-6 rounded-xl shadow-lg border border-gray-200 mb-8 transition-all duration-300 hover:shadow-xl">
             <div className="flex items-center justify-between mb-6">
               <div className="flex items-center gap-3">
-                <div className="bg-gradient-to-r from-indigo-600 to-blue-500 p-2 rounded-lg">
-                  <span className="material-symbols-outlined text-white text-2xl">psychology</span>
-                </div>
-                <div>
-                  <h3 className="text-xl font-bold text-gray-900 font-[Manrope]">AI Interview Analysis</h3>
-                  <div className="text-xs bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 px-3 py-1 rounded-full font-medium font-[Manrope] mt-1">
-                    {selectedType === 'technical' && '🔧 Technical Interview'}
-                    {selectedType === 'behavioral' && '🤝 Behavioral Interview'}
-                    {selectedType === 'general' && '💼 General Interview'}
-                  </div>
+                <h3 className="text-xl font-bold text-gray-900 font-[Manrope]">AI Interview Analysis</h3>
+                <div className="text-xs bg-gray-100 text-gray-700 px-3 py-1 rounded-full font-medium font-[Manrope] mt-1">
+                  {selectedType === 'technical' && '🔧 Technical Interview'}
+                  {selectedType === 'behavioral' && '🤝 Behavioral Interview'}
+                  {selectedType === 'general' && '💼 General Interview'}
                 </div>
               </div>
               
               {!currentAnalysis && !isAnalyzing && (
                 <button
                   onClick={generateComprehensiveAnalysis}
-                  className="bg-gradient-to-r from-indigo-600 to-blue-500 text-white px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl"
+                  className="bg-gray-100 text-gray-700 px-6 py-3 rounded-lg font-semibold hover:opacity-90 transition-all duration-200 shadow-lg hover:shadow-xl"
                 >
                   <span className="flex items-center gap-2">
-                    <span className="material-symbols-outlined text-lg">auto_awesome</span>
                     Generate Comprehensive Analysis
                   </span>
                 </button>
@@ -248,7 +243,7 @@ export default function ResultsPhase({
             {isAnalyzing ? (
               <div className="flex items-center justify-center py-8">
                 <div className="flex items-center gap-3">
-                  <div className="w-6 h-6 border-2 border-indigo-600 border-t-transparent rounded-full animate-spin"></div>
+                  <div className="w-6 h-6 border-2 border-gray-600 border-t-transparent rounded-full animate-spin"></div>
                   <span className="text-gray-600 font-[Manrope]">Generating comprehensive analysis...</span>
                 </div>
               </div>
@@ -276,14 +271,14 @@ export default function ResultsPhase({
                   return (
                     <>
                       {/* Overall Score Header */}
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 border border-blue-200 rounded-xl p-8 text-center">
+                      <div className="bg-gray-100 border border-gray-200 rounded-xl p-8 text-center">
                         <div className="inline-flex items-center gap-4">
-                          <div className="w-20 h-20 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-full flex items-center justify-center shadow-lg">
-                            <span className="text-3xl font-bold text-white">{analysisData.score}</span>
+                          <div className="w-20 h-20 bg-gray-200 rounded-full flex items-center justify-center shadow-lg">
+                            <span className="text-3xl font-bold text-gray-900">{analysisData.score}</span>
                           </div>
                           <div className="text-left">
                             <h2 className="text-3xl font-bold text-gray-900 font-[Manrope]">Interview Performance</h2>
-                            <p className="text-xl font-semibold text-blue-600 font-[Manrope]">{analysisData.verdict}</p>
+                            <p className="text-xl font-semibold text-gray-900 font-[Manrope]">{analysisData.verdict}</p>
                           </div>
                         </div>
                         <p className="mt-6 text-lg text-gray-700 font-[Manrope] leading-relaxed">
@@ -292,21 +287,18 @@ export default function ResultsPhase({
                       </div>
 
                       {/* Three Column Layout */}
-                      <div className="grid md:grid-cols-3 gap-6">
+                      <div className="flex flex-col gap-6">
                         
                         {/* Strengths */}
-                        <div className="bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-xl p-6">
-                          <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 bg-green-500 rounded-lg flex items-center justify-center">
-                              <span className="material-symbols-outlined text-white">thumb_up</span>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 font-[Manrope]">What You Did Well</h3>
-                          </div>
+                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 flex-1">
+                          <h3 className="text-xl font-bold text-gray-900 font-[Manrope] mb-4">
+                            What You Did Well
+                          </h3>
                           <div className="space-y-4">
                             {(analysisData.strengths || []).map((strength: string, idx: number) => (
                               <div key={idx} className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-green-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                  <span className="text-xs font-bold text-green-600">{idx + 1}</span>
+                                <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <span className="text-xs font-bold text-gray-600">{idx + 1}</span>
                                 </div>
                                 <p className="text-sm text-gray-800 font-[Manrope] leading-relaxed">{strength}</p>
                               </div>
@@ -315,18 +307,15 @@ export default function ResultsPhase({
                         </div>
 
                         {/* Areas for Improvement */}
-                        <div className="bg-gradient-to-br from-orange-50 to-red-50 border border-orange-200 rounded-xl p-6">
-                          <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 bg-orange-500 rounded-lg flex items-center justify-center">
-                              <span className="material-symbols-outlined text-white">trending_up</span>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 font-[Manrope]">Areas to Improve</h3>
-                          </div>
+                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 flex-1">
+                          <h3 className="text-xl font-bold text-gray-900 font-[Manrope] mb-4">
+                            Areas to Improve
+                          </h3>
                           <div className="space-y-4">
                             {(analysisData.areas_for_improvement || []).map((area: string, idx: number) => (
                               <div key={idx} className="flex items-start gap-3">
-                                <div className="w-6 h-6 bg-orange-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
-                                  <span className="text-xs font-bold text-orange-600">{idx + 1}</span>
+                                <div className="w-6 h-6 bg-gray-100 rounded-full flex items-center justify-center flex-shrink-0 mt-0.5">
+                                  <span className="text-xs font-bold text-gray-600">{idx + 1}</span>
                                 </div>
                                 <p className="text-sm text-gray-800 font-[Manrope] leading-relaxed">{area}</p>
                               </div>
@@ -335,13 +324,10 @@ export default function ResultsPhase({
                         </div>
 
                         {/* Action Plan */}
-                        <div className="bg-gradient-to-br from-purple-50 to-violet-50 border border-purple-200 rounded-xl p-6">
-                          <div className="flex items-center gap-3 mb-6">
-                            <div className="w-10 h-10 bg-purple-500 rounded-lg flex items-center justify-center">
-                              <span className="material-symbols-outlined text-white">rocket_launch</span>
-                            </div>
-                            <h3 className="text-xl font-bold text-gray-900 font-[Manrope]">Action Plan</h3>
-                          </div>
+                        <div className="bg-gray-50 border border-gray-200 rounded-xl p-6 flex-1">
+                          <h3 className="text-xl font-bold text-gray-900 font-[Manrope] mb-4">
+                            Action Plan
+                          </h3>
                           <div className="space-y-4">
                             {(analysisData.next_steps || []).map((step: string, idx: number) => (
                               <div key={idx} className="flex items-start gap-3">

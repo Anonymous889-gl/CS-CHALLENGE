@@ -1,3 +1,4 @@
+"use client";
 import React, { useEffect } from 'react'
 import { Question } from '../../../data/interview-questions'
 import { analyzeCompleteInterview, analyzeIndividualQuestions, ComprehensiveAnalysisResult } from '../services/analysis'
